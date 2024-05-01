@@ -1,0 +1,39 @@
+`timescale 1ns / 1ps
+
+module SevSegDec(
+    //input en,
+    input [4:0] btn,
+    output wire [3:0] LED, // LED 12-15
+    output wire led0,
+    output reg [6:0] segments,
+);
+
+integer i = 0; // declare here or? i is the actual time for a *SINGLE* 7-segment digit
+// **make 4 counters like i each for every 7seg (i,j,k,l)? one counter for every 1 of the 4 7-segs
+	always @(*) begin
+        case(i)
+            0: segments = 7'b0000001; // 0
+            1: segments = 7'b1001111; // 1
+            2: segments = 7'b0010010; // 2
+            3: segments = 7'b0000110; // 3
+            4: segments = 7'b1001100; // 4
+            5: segments = 7'b0100100; // 5
+            6: segments = 7'b0100000; // 6
+            7: segments = 7'b0001111; // 7
+            8: segments = 7'b0000000; // 8
+            9: segments = 7'b0000100; // 9
+ 
+            default: segments = 7'b0000001; // all ZEROS displayed initially
+        endcase
+
+        if (btn[1]) begin // UP is pressed
+	if(i<9) begin // max of i is 9
+            i = i + 1; // increment time
+	end
+        end else if(btn[2]) begin // DOWN is pressed
+	if(i>0) begin //minimum of i is 0
+            i = i - 1; // decrement time
+        end
+     end
+end
+endmodule
