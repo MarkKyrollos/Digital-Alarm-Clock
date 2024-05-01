@@ -2,14 +2,20 @@
 
 module SevSegDec(
     //input en,
-    input [4:0] btn,
-    output wire [3:0] LED, // LED 12-15
-    output wire led0,
-    output reg [6:0] segments,
+    input BTNC, // Center button
+    input BTNR, // Right button
+    input BTNL, // Left button
+    input BTNU, // Up button
+    input BTND,  // Down button
+    output reg [6:0] segments
 );
+
+reg [4:0] led_output; // LEDs 0 and 12-15
+//output wire [4:0] LED, 
 
 integer i = 0; // declare here or? i is the actual time for a *SINGLE* 7-segment digit
 // **make 4 counters like i each for every 7seg (i,j,k,l)? one counter for every 1 of the 4 7-segs
+
 	always @(*) begin
         case(i)
             0: segments = 7'b0000001; // 0
@@ -25,15 +31,26 @@ integer i = 0; // declare here or? i is the actual time for a *SINGLE* 7-segment
  
             default: segments = 7'b0000001; // all ZEROS displayed initially
         endcase
-
-        if (btn[1]) begin // UP is pressed
+	
+	always @(*) begin
+        if (BTNU) begin // UP
 	if(i<9) begin // max of i is 9
             i = i + 1; // increment time
 	end
-        end else if(btn[2]) begin // DOWN is pressed
+        end else if(BTND) begin // DOWN
 	if(i>0) begin //minimum of i is 0
             i = i - 1; // decrement time
         end
      end
+	
+	if(BTNC) begin // CENTER , ENTERED ADJUST MODE (also check wenta rag3 mn adjust to clock/alarm mode)
+	if(BTNL) begin // LEFT
+	// use led_output[] accordingly
+	end 
+
+
+	end
+
+end
 end
 endmodule
