@@ -13,6 +13,7 @@ module SevSegDec(
 reg [4:0] led_output; // LEDs 0 and 12-15
 //output wire [4:0] LED, 
 
+integer adjust = 0;
 integer i = 0; // declare here or? i is the actual time for a *SINGLE* 7-segment digit
 // **make 4 counters like i each for every 7seg (i,j,k,l)? one counter for every 1 of the 4 7-segs
 
@@ -31,6 +32,9 @@ integer i = 0; // declare here or? i is the actual time for a *SINGLE* 7-segment
  
             default: segments = 7'b0000001; // all ZEROS displayed initially
         endcase
+end
+	
+	//led_output = 5'b00000; // Initialize all LED outputs to 0, all OFF
 	
 	always @(*) begin
         if (BTNU) begin // UP
@@ -41,7 +45,7 @@ integer i = 0; // declare here or? i is the actual time for a *SINGLE* 7-segment
 	if(i>0) begin //minimum of i is 0
             i = i - 1; // decrement time
         end
-     end
+        end
 	
 	if(BTNC) begin // CENTER , ENTERED ADJUST MODE (also check wenta rag3 mn adjust to clock/alarm mode)
 	if(BTNL) begin // LEFT
@@ -51,6 +55,9 @@ integer i = 0; // declare here or? i is the actual time for a *SINGLE* 7-segment
 
 	end
 
-end
-end
+end // the end of the always block
+
+// Assign LEDs to the output
+assign {led_output[0], led_output[4:1]} = led_output; // led_output[0] is connected to LD0, led_output[1] to LD12, led_output[2] to LD13, led_output[3] to LD14, led_output[4] to LD15
+
 endmodule
