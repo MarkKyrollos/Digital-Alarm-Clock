@@ -1,24 +1,34 @@
-`timescale 1ns / 1ps
-
 module SevSegDec(
-    //input en,
     input BTNC, // Center button
     input BTNR, // Right button
     input BTNL, // Left button
     input BTNU, // Up button
     input BTND,  // Down button
-    output reg [6:0] segments
+    //output reg [3:0] anode_active,
+    output reg [0:6] segments
 );
 
-reg [4:0] led_output; // LEDs 0 and 12-15
-//output wire [4:0] LED, 
+// Define outputs for LEDs to indicate which segment is active
+reg [4:0] led_output; // LEDs LD12, LD13, LD14, LD15
 
-integer adjust = 0;
-integer i = 0; // declare here or? i is the actual time for a *SINGLE* 7-segment digit
-// **make 4 counters like i each for every 7seg (i,j,k,l)? one counter for every 1 of the 4 7-segs
+// Define counter for current active segment
+reg [1:0] active_segment = 2'b00; // Initially, start with the far-most left segment (segment 0)
 
-	always @(*) begin
-        case(i)
+//integer adjust = 0; // when adjust is 0 it indicates we are in alarm/clock mode
+integer i[4]; // Counter for the current time for each 7-segment digit
+
+// Initialize counters for each digit
+initial begin
+    for (int j = 0; j < 4; j = j + 1) begin
+        i[j] = 0;
+    end
+end
+
+// Case block to determine which segment to display based on the current active segment
+always @* begin
+    case (active_segment)
+        2'b00: begin // Far-most left segment
+            case (i[0])
             0: segments = 7'b0000001; // 0
             1: segments = 7'b1001111; // 1
             2: segments = 7'b0010010; // 2
@@ -29,35 +39,82 @@ integer i = 0; // declare here or? i is the actual time for a *SINGLE* 7-segment
             7: segments = 7'b0001111; // 7
             8: segments = 7'b0000000; // 8
             9: segments = 7'b0000100; // 9
- 
-            default: segments = 7'b0000001; // all ZEROS displayed initially
-        endcase
+                default: segments = 7'b0000001; // Default to 0
+            endcase
+            led_output = 4'b10000; // LD15 is active
+        end
+        2'b01: begin // 2nd segment from the left
+            case (i[1])
+            0: segments = 7'b0000001; // 0
+            1: segments = 7'b1001111; // 1
+            2: segments = 7'b0010010; // 2
+            3: segments = 7'b0000110; // 3
+            4: segments = 7'b1001100; // 4
+            5: segments = 7'b0100100; // 5
+            6: segments = 7'b0100000; // 6
+            7: segments = 7'b0001111; // 7
+            8: segments = 7'b0000000; // 8
+            9: segments = 7'b0000100; // 9
+                default: segments = 7'b0000001; // Default to 0
+            endcase
+            led_output = 4'b01000; // LD14 is active
+        end
+        2'b10: begin // 3rd segment from the left
+            case (i[2])
+            0: segments = 7'b0000001; // 0
+            1: segments = 7'b1001111; // 1
+            2: segments = 7'b0010010; // 2
+            3: segments = 7'b0000110; // 3
+            4: segments = 7'b1001100; // 4
+            5: segments = 7'b0100100; // 5
+            6: segments = 7'b0100000; // 6
+            7: segments = 7'b0001111; // 7
+            8: segments = 7'b0000000; // 8
+            9: segments = 7'b0000100; // 9
+                default: segments = 7'b0000001;
+            endcase
+            led_output = 4'b00100; // LD13 is active
+        end
+        2'b11: begin // Far-most right segment
+            case (i[3])
+            0: segments = 7'b0000001; // 0
+            1: segments = 7'b1001111; // 1
+            2: segments = 7'b0010010; // 2
+            3: segments = 7'b0000110; // 3
+            4: segments = 7'b1001100; // 4
+            5: segments = 7'b0100100; // 5
+            6: segments = 7'b0100000; // 6
+            7: segments = 7'b0001111; // 7
+            8: segments = 7'b0000000; // 8
+            9: segments = 7'b0000100; // 9
+                default: segments = 7'b0000001; // Default to 0
+            endcase
+            led_output = 4'b00010; // LD12 is active
+        end
+        default: begin
+            segments = 7'b0000001; // Default to 0
+            led_output = 4'b00000; // All LEDs off
+        end
+    endcase
 end
-	
-	//led_output = 5'b00000; // Initialize all LED outputs to 0, all OFF
-	
-	always @(*) begin
-        if (BTNU) begin // UP
-	if(i<9) begin // max of i is 9
-            i = i + 1; // increment time
-	end
-        end else if(BTND) begin // DOWN
-	if(i>0) begin //minimum of i is 0
-            i = i - 1; // decrement time
-        end
-        end
-	
-	if(BTNC) begin // CENTER , ENTERED ADJUST MODE (also check wenta rag3 mn adjust to clock/alarm mode)
-	if(BTNL) begin // LEFT
-	// use led_output[] accordingly
-	end 
 
 
-	end
+//if(adjust==1) begin
+// Increment or decrement the counter based on button presses
+always @* begin
+    if (BTNU && i[active_segment] < 9) // UP button and limit check
+        i[active_segment] = i[active_segment] + 1;
+    else if (BTND && i[active_segment] > 0) // DOWN button and limit check
+        i[active_segment] = i[active_segment] - 1;
+end
 
-end // the end of the always block
+// Change active segment based on button press
+always @* begin
+    if (BTNC && BTNL) // CENTER and LEFT button pressed
+        active_segment = (active_segment == 2'b00) ? 2'b11 : active_segment - 1; // wrap around if already at segment 0
+end
 
-// Assign LEDs to the output
-assign {led_output[0], led_output[4:1]} = led_output; // led_output[0] is connected to LD0, led_output[1] to LD12, led_output[2] to LD13, led_output[3] to LD14, led_output[4] to LD15
+// Assign LED outputs to the LEDs LD12, LD13, LD14, LD15, LD0
+assign {led_output, 4'b00000} = led_output; // LD12 is connected to the left-most segment, LD13 to the 2nd, LD14 to the 3rd, and LD15 to the right-most segment
 
 endmodule
