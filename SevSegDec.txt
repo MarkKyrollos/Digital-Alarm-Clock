@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 module SevSegDec(
     input BTNC, // Center button
     input BTNR, // Right button
