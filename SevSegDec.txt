@@ -5,9 +5,9 @@ module SevSegDec(
     input BTNR, // Right button
     input BTNL, // Left button
     input BTNU, // Up button
-    input BTND,  // Down button
-    //output reg [3:0] anode_active,
-    output reg [0:6] segments
+    input BTND, // Down button
+    output reg [6:0] segments // Adjusted the size to match the expected size
+    
 );
 
 // Define outputs for LEDs to indicate which segment is active
@@ -16,12 +16,13 @@ reg [4:0] led_output; // LEDs LD12, LD13, LD14, LD15
 // Define counter for current active segment
 reg [1:0] active_segment = 2'b00; // Initially, start with the far-most left segment (segment 0)
 
-//integer adjust = 0; // when adjust is 0 it indicates we are in alarm/clock mode
-integer i[4]; // Counter for the current time for each 7-segment digit
+// Integer array to hold the current time for each 7-segment digit
+integer i[0:3]; // Adjusted the range to match the number of segments
+integer j;
 
 // Initialize counters for each digit
 initial begin
-    for (int j = 0; j < 4; j = j + 1) begin
+    for (j = 0; j < 4; j = j + 1) begin // Changed 'genvar' to 'int' for loop variable
         i[j] = 0;
     end
 end
@@ -43,7 +44,7 @@ always @* begin
             9: segments = 7'b0000100; // 9
                 default: segments = 7'b0000001; // Default to 0
             endcase
-            led_output = 4'b10000; // LD15 is active
+            led_output = 5'b10000; // LD15 is active
         end
         2'b01: begin // 2nd segment from the left
             case (i[1])
@@ -59,7 +60,7 @@ always @* begin
             9: segments = 7'b0000100; // 9
                 default: segments = 7'b0000001; // Default to 0
             endcase
-            led_output = 4'b01000; // LD14 is active
+            led_output = 5'b01000; // LD14 is active
         end
         2'b10: begin // 3rd segment from the left
             case (i[2])
@@ -75,7 +76,7 @@ always @* begin
             9: segments = 7'b0000100; // 9
                 default: segments = 7'b0000001;
             endcase
-            led_output = 4'b00100; // LD13 is active
+            led_output = 5'b00100; // LD13 is active
         end
         2'b11: begin // Far-most right segment
             case (i[3])
@@ -91,17 +92,15 @@ always @* begin
             9: segments = 7'b0000100; // 9
                 default: segments = 7'b0000001; // Default to 0
             endcase
-            led_output = 4'b00010; // LD12 is active
+            led_output = 5'b00010; // LD12 is active
         end
         default: begin
             segments = 7'b0000001; // Default to 0
-            led_output = 4'b00000; // All LEDs off
+            led_output = 5'b00000; // All LEDs off
         end
     endcase
 end
 
-
-//if(adjust==1) begin
 // Increment or decrement the counter based on button presses
 always @* begin
     if (BTNU && i[active_segment] < 9) // UP button and limit check
@@ -117,6 +116,16 @@ always @* begin
 end
 
 // Assign LED outputs to the LEDs LD12, LD13, LD14, LD15, LD0
-assign {led_output, 4'b00000} = led_output; // LD12 is connected to the left-most segment, LD13 to the 2nd, LD14 to the 3rd, and LD15 to the right-most segment
+//assign {led_output, 5'b00000} = led_output; // LD12 is connected to the left-most segment, LD13 to the 2nd, LD14 to the 3rd, and LD15 to the right-most segment
+always @* begin
+    // Assign LED outputs to the LEDs LD12, LD13, LD14, LD15, LD0
+    case(led_output)
+        5'b10000: segments = 7'b0000001; // LD15 is active
+        5'b01000: segments = 7'b0000001; // LD14 is active
+        5'b00100: segments = 7'b0000001; // LD13 is active
+        5'b00010: segments = 7'b0000001; // LD12 is active
+        default: segments = 7'b0000001; // All LEDs off
+    endcase
+end
 
 endmodule
