@@ -6,7 +6,8 @@ module SevSegDec(
     input BTNL, // Left button
     input BTNU, // Up button
     input BTND, // Down button
-    output reg [6:0] segments // Adjusted the size to match the expected size
+    //output reg [3:0] anode_active,
+    output reg [0:6] segments // Adjusted the size to match the expected size
     
 );
 
@@ -16,13 +17,14 @@ reg [4:0] led_output; // LEDs LD12, LD13, LD14, LD15
 // Define counter for current active segment
 reg [1:0] active_segment = 2'b00; // Initially, start with the far-most left segment (segment 0)
 
+//integer adjust = 0; // when adjust is 0 it indicates we are in alarm/clock mode
 // Integer array to hold the current time for each 7-segment digit
 integer i[0:3]; // Adjusted the range to match the number of segments
 integer j;
 
 // Initialize counters for each digit
 initial begin
-    for (j = 0; j < 4; j = j + 1) begin // Changed 'genvar' to 'int' for loop variable
+    for (j = 0; j < 4; j = j + 1) begin 
         i[j] = 0;
     end
 end
@@ -101,6 +103,9 @@ always @* begin
     endcase
 end
 
+
+
+//if(adjust==1) begin
 // Increment or decrement the counter based on button presses
 always @* begin
     if (BTNU && i[active_segment] < 9) // UP button and limit check
@@ -117,6 +122,7 @@ end
 
 // Assign LED outputs to the LEDs LD12, LD13, LD14, LD15, LD0
 //assign {led_output, 5'b00000} = led_output; // LD12 is connected to the left-most segment, LD13 to the 2nd, LD14 to the 3rd, and LD15 to the right-most segment
+
 always @* begin
     // Assign LED outputs to the LEDs LD12, LD13, LD14, LD15, LD0
     case(led_output)
@@ -129,3 +135,4 @@ always @* begin
 end
 
 endmodule
+
