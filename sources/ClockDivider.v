@@ -1,6 +1,9 @@
 `timescale 1ns / 1ps
 
-module ClockDivider #(parameter n = 50000000) (input clk, rst, output reg clk_out);
+module ClockDivider #(parameter n = 50000000) (input clk,
+                                               input rst,
+                                               output reg clk_out);
+
     
 reg [31:0] count;
     
