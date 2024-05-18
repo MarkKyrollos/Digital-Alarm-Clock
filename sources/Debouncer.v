@@ -1,22 +1,33 @@
 `timescale 1ns / 1ps
 
-module Debouncer(input clk, rst, in, output out);
+/*******************************************************************
+*
+* Module: Debouncer.v
+* Project: Digital Alarm Clock
+* Author: Mark Kyrollos - markgeorge99@aucegypt.edu
+* Description: this is the debouncer used for the interactive push buttons
+*
+* Change history: 1/5/2024 – 18/5/2024
+*
+*
+**********************************************************************/
 
-reg q1,q2,q3;
 
 
-// this block is triggered on the rising edge of clk or rst
-always@(posedge clk, posedge rst) begin
- if(rst == 1'b1) begin // If reset is high
- q1 <= 0;
- q2 <= 0;
- q3 <= 0;
- end
-else begin
- q1 <= in;
- q2 <= q1;
- q3 <= q2;
- end
-end
-assign out = (rst) ? 0 : q1&q2&q3; // If reset is high, output is 0, else output is the AND of q1, q2, q3 together
+
+module Debouncer(input clk, reset, in, output out);
+    reg q1,q2,q3;
+    always@(posedge clk, posedge reset) begin
+        if(reset == 1'b1) begin
+            q1 <= 0;
+            q2 <= 0;
+            q3 <= 0;
+        end
+        else begin
+            q1 <= in;
+            q2 <= q1;
+            q3 <= q2;
+        end
+    end
+    assign out = (reset) ? 0:q1&q2&q3;
 endmodule
